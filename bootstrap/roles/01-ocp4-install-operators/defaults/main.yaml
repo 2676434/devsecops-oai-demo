@@ -8,3 +8,8 @@ ocp4_demo_pipeline_namespace: cicd
 acs_expected_crds:
 - centrals.platform.stackrox.io
 - securedclusters.platform.stackrox.io
+istio_expected_crds:
+- servicemeshcontrolplanes.maistra.io
+- servicemeshmembers.maistra.io
+- servicemeshmemberrolls.maistra.io
+- ossmconsoles.kiali.io
