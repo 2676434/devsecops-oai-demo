@@ -1,0 +1,43 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pipeline-scc
+  namespace: oai-basic
+rules:
+- apiGroups:
+  - security.openshift.io
+  resources:
+  - securitycontextconstraints
+  ResourceNames:
+  - anyuid
+  verbs:
+  - use
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pipeline-edit
+  namespace: oai-basic
+subjects:
+  - kind: ServiceAccount
+    name: pipeline
+    namespace: oai-basic
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pipeline-scc
+  namespace: oai-basic
+subjects:
+  - kind: ServiceAccount
+    name: pipeline
+    namespace: oai-basic
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pipeline-scc
+  namespace: oai-basic
