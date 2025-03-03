@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: devsecops-oai
+spec:
+  pipelineRef:
+    name: devsecops-oai
+  workspaces:
+  - name: workspace
+    persistentVolumeClaim:
+      claimName: devsecops-workspace

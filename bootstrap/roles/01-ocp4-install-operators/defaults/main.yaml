@@ -1,0 +1,10 @@
+pipelines_expected_crds:
+- pipelineruns.tekton.dev
+- pipelines.tekton.dev
+- tektonpipelines.operator.tekton.dev
+
+stackrox_central_admin_password: stackrox
+ocp4_demo_pipeline_namespace: cicd
+acs_expected_crds:
+- centrals.platform.stackrox.io
+- securedclusters.platform.stackrox.io

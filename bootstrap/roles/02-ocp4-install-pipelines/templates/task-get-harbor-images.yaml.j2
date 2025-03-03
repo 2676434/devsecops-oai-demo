@@ -1,0 +1,49 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: get-harbor-images
+  namespace: cicd
+spec:
+  workspaces:
+  - name: workspace
+  params:
+    - name: harbor-url
+      description: "Harbor registry URL"
+      type: string
+      default: "https://harbor-registry.hub-cluster.example.com"
+    - name: project-name
+      description: "Harbor project name"
+      type: string
+      default: "library"
+    - name: username
+      description: "Secret containing the Harbor login name"
+      type: string
+    - name: password
+      description: "Secret containing the Harbor login password"
+      type: string
+  steps:
+    - name: fetch-harbor-images
+      image: registry.redhat.io/ubi8/ubi:8.0
+      workingDir: /workspace/workspace
+      command: ["/bin/bash", "-c"]
+      args:
+        - |-
+          yum -y install jq
+          # using manual values for now as username and password contains extra newline.
+          curl -u "$HARBOR_USERNAME:$HARBOR_PASSWORD" \
+                "$(inputs.params.harbor-url)/api/v2.0/projects/$(inputs.params.project-name)/artifacts" -k | jq -r '.[] | select(.type=="IMAGE") | "\(.repository_name):\(.tags[0].name)"' | awk '{print "harbor-registry.hub-cluster.example.com/"$1}' > images.json
+          curl -u "admin:Harbor12345" \
+                "$(inputs.params.harbor-url)/api/v2.0/projects/$(inputs.params.project-name)/artifacts" -k | jq -r '.[] | select(.type=="IMAGE") | "\(.repository_name):\(.tags[0].name)"' | awk '{print "harbor-registry.hub-cluster.example.com/"$1}' > images.json
+          echo "----Fetched Images:----"          
+          cat images.json
+      env:
+        - name: HARBOR_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(inputs.params.username)
+              key: username
+        - name: HARBOR_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(inputs.params.password)
+              key: password

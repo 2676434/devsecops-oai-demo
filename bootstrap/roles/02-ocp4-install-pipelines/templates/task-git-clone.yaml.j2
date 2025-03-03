@@ -1,0 +1,26 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: git-clone
+  namespace: oai-basic
+spec:
+  params:
+    - name: GIT_REPOSITORY
+      type: string
+      default: "https://github.com/2676434/OAI-5G-DevSecops"
+      description: clone latest code.
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: workspace
+
+  results:
+    - name: commit
+      description: The commit SHA
+
+  steps:
+    - name: git-clone
+      image: quay.io/rcarrata/git:v2.26.2
+      workingDir: /workspace/workspace
+      script: |
+        rm -rf OAI-5G-DevSecops
+        git clone $(params.GIT_REPOSITORY)

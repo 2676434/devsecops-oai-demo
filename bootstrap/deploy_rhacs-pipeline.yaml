@@ -1,0 +1,25 @@
+---
+- name: 'Install the ACS pipeline'
+  hosts: localhost
+  connection: local
+  tasks:
+
+    # Install Pipeline and ACS operators and create resorces
+    - name: 'Install pipeline'
+      include_role:
+        name: "01-ocp4-install-operators"
+
+    #  Create tekton pipelines wrt rhacs scan
+    - name: 'Install Pipelines'
+      include_role:
+        name: "02-ocp4-install-pipelines"
+    
+    # Include the policies, and integrate with harbor
+    - name: 'Install the ACS Central'
+      include_role:
+        name: "03-ocp4-post-acs"
+
+    # Update to add cosign 
+    - name: 'Install and Enable the infra for Signing and Tekton Chaining'
+      include_role:
+        name: "04-ocp4-install-signing"

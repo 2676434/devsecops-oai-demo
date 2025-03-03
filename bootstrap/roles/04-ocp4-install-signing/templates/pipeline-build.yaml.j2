@@ -1,0 +1,107 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: devsecops-stage
+  namespace: cicd
+spec:
+  params:
+    - name: APP_NAMESPACE
+      type: string
+      default: default
+      description: The namespace for applications
+  workspaces:
+  - name: workspace
+  tasks:
+  - name: harbor-images
+    taskRef:
+      name: get-harbor-images
+    params:
+    - name: harbor-url
+      value: https://harbor-registry.hub-cluster.example.com
+    - name: project-name
+      value: library
+    - name: username
+      value: harbor-secret
+    - name: password
+      value: harbor-secret
+    workspaces:
+    - name: workspace
+      workspace: workspace
+  - name: deployment-file
+    taskRef:
+      name: get-deployment-yaml
+    runAfter:
+    - harbor-images
+    params:
+    - name: namespace
+      value: dafault
+    - name: manifest_file
+      value: deployment.yaml
+    workspaces:
+    - name: workspace
+      workspace: workspace
+  - name: image-sign
+    taskRef:
+      name: cosign-task
+    runAfter:
+    - deployment-file
+    workspaces:
+    - name: workspace
+      workspace: workspace
+    params:
+    - name: IMAGE
+      value: "image-registry.openshift-image-registry.svc:5000/{{pipeline_namespace}}/cosign-pod"
+    - name: images_file
+      value: images.json
+    - name: ARGS
+      value: 
+        - "sign"
+        - "--allow-insecure-registry"
+        - "--key k8s://{{ pipeline_namespace }}/{{ secret_generate_name }}"
+  - name: image-scan
+    runAfter:
+    - image-sign
+    taskRef:
+      name: rox-image-scan
+    params:
+    - name: images_file
+      value: images.json
+    - name: rox_api_token
+      value: roxsecrets
+    - name: rox_central_endpoint
+      value: roxsecrets
+    - name: output_format
+      value: table
+    workspaces:
+    - name: workspace
+      workspace: workspace
+  - name: image-check
+    runAfter:
+    - image-scan
+    taskRef:
+      name: rox-image-check
+    params:
+    - name: images_file
+      value: images.json
+    - name: rox_api_token
+      value: roxsecrets
+    - name: rox_central_endpoint
+      value: roxsecrets
+    workspaces:
+    - name: workspace
+      workspace: workspace
+  - name: deploy-check
+    runAfter:
+    - image-check
+    taskRef:
+      name: rox-deployment-check
+    params:
+    - name: rox_api_token
+      value: roxsecrets
+    - name: rox_central_endpoint
+      value: roxsecrets
+    - name: file
+      value: deployment.yaml
+    workspaces:
+    - name: workspace
+      workspace: workspace

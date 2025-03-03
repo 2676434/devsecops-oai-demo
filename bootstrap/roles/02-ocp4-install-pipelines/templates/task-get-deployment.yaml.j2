@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: get-deployment-yaml
+  namespace: cicd
+spec:
+  workspaces:
+  - name: workspace
+  params:
+    - name: manifest_file
+      description: The file that contains yaml deploy manifests
+      type: string
+      default: "deployment.yaml"
+    - name: namespace
+      description: The application namespace
+      type: string
+      default: "default"
+  steps:
+    - name: deploy-file
+      image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+      workingDir: /workspace/workspace
+      command: ["/bin/bash", "-c"]
+      args:
+        - |-
+          echo Saving manifests in $(inputs.params.manifest_file) file
+          oc login -u="kubeadmin" -p="kmYGV-DnGRo-wQywL-muSAF" "https://api.secondary-server.example.com:6443" --insecure-skip-tls-verify
+          oc get deployment -n $(inputs.params.namespace) -o yaml > $(inputs.params.manifest_file)
+          echo -----------------------------------
