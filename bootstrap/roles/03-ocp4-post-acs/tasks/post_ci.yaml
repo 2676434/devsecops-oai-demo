@@ -33,7 +33,6 @@
   set_fact:
     f_rox_api_token: "{{ r_ci_token_json.json.token }}"
       
-      
 - name: Create ACS API Token secret for using in the pipelines
   kubernetes.core.k8s:
     state: present
@@ -48,23 +47,13 @@
         namespace: "{{ ocp4_demo_pipeline_namespace }}"
       type: Opaque
 
-- name: Generate pipeline token "oc -n cicd create token pipeline"
+- name: Generate pipeline sa token "oc -n cicd create token pipeline"
   command: "oc -n cicd create token pipeline"
   register: pipeline_token_output
 
 - name: Get pipeline token from output
   set_fact:
     pipeline_token: "{{ pipeline_token_output.stdout }}"
-#
-### FIXME: roxsecrets ####
-#- name: Generate pipeline token using kubernetes.core.k8s module "oc -n cicd create token pipeline"
-#  kubernetes.core.k8s:
-#    state: present
-#    api_version: v1
-#    kind: token
-#    namespace: cicd
-#    name: pipeline
-#  register: pipeline_token
 
 - name: Creating ACS Integration with the Openshift Internal Registry
   uri:

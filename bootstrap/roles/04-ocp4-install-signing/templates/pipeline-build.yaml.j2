@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: devsecops-stage
+  name: devsecops-oai
   namespace: cicd
 spec:
   params:
@@ -27,11 +27,23 @@ spec:
     workspaces:
     - name: workspace
       workspace: workspace
+  - name: oai-clone
+    taskRef:
+      name: git-clone
+    runAfter:
+    - harbor-images
+    params:
+    - name: GIT_REPOSITORY
+      value: 'https://github.com/2676434/OAI-5G-DevSecops'
+    workspaces:
+    - name: workspace
+      workspace: workspace
+  ##Update task to use deployment files from in git clone
   - name: deployment-file
     taskRef:
       name: get-deployment-yaml
     runAfter:
-    - harbor-images
+    - oai-clone
     params:
     - name: namespace
       value: dafault
@@ -105,3 +117,17 @@ spec:
     workspaces:
     - name: workspace
       workspace: workspace
+  - name: deployment-oai
+    taskRef:
+      name: deploy_oai
+    runAfter:
+    - deploy-check
+    params:
+    - name: namespace
+      value: oai-basic ## Namespace to create
+    - name: token
+      value: {{ pipeline_token }} # TODO
+    workspaces:
+    - name: workspace
+      workspace: workspace
+

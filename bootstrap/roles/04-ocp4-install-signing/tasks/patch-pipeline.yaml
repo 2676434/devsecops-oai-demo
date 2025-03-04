@@ -20,6 +20,7 @@
     definition: "{{ lookup('template', item ) | from_yaml }}"
   loop:
   - ./templates/pipeline-build.yaml.j2
+  - ./templates/pipeline-build-pvc.yaml.j2
 
 #  - ./templates/pipeline-build-stage.yaml.j2
 #  - ./templates/pipeline-build-pvc.yaml.j2
