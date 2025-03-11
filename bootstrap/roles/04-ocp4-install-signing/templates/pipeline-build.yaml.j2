@@ -119,14 +119,14 @@ spec:
       workspace: workspace
   - name: deployment-oai
     taskRef:
-      name: deploy_oai
+      name: deploy-oai
     runAfter:
     - deploy-check
     params:
     - name: namespace
-      value: oai-basic ## Namespace to create
-    - name: token
-      value: {{ pipeline_token }} # TODO
+      value: oai-basic
+    - name: pipeline_token
+      value: oai-pipeline
     workspaces:
     - name: workspace
       workspace: workspace

@@ -1,30 +1,37 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: deploy_oai
+  name: deploy-oai
   namespace: cicd
 spec:
   workspaces:
   - name: workspace
   params:
-    - name: token
-      description: The user to deploy OAI
+    - name: pipeline_token
+      description: The user token to deploy OAI
       type: string
     - name: namespace
       description: The application namespace
       type: string
       default: oai-basic
   steps:
-    - name: deploy_oai
+    - name: deploy-oai
       image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
       workingDir: /workspace/workspace
-      command: ["/bin/bash", "-c"]
-      args:
-        - |-
-          echo Install OAI deployment in $(inputs.params.namespace) namespace
-          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-          chmod 700 get_helm.sh
-          ./get_helm.sh
-          helm dependency build OAI-5G-DevSecops/charts/oai-5g-core/oai-5g-basic
-          helm install oai-5g-basic OAI-5G-DevSecops/charts/oai-5g-core/oai-5g-basic -n $(inputs.params.namespace) --kube-token $(inputs.params.token)
-          echo -----------------------------------
+      env:
+        - name: PIPELINE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(inputs.params.pipeline_token)
+              key: pipeline_token
+      script: |
+        #!/usr/bin/env bash
+        set +x
+        echo Install OAI deployment in $(inputs.params.namespace) namespace
+        echo TOKEN: $PIPELINE_TOKEN
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        ./get_helm.sh
+        helm dependency build OAI-5G-DevSecops/charts/oai-5g-core/oai-5g-basic
+        helm install oai-5g-basic OAI-5G-DevSecops/charts/oai-5g-core/oai-5g-basic -n $(inputs.params.namespace) --kube-token $PIPELINE_TOKEN
+        echo -----------------------------------

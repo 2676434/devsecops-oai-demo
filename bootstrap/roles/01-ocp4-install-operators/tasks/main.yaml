@@ -3,4 +3,4 @@
 - import_tasks: pipeline.yaml
 - import_tasks: central.yaml
 - import_tasks: sensor.yaml
-- import_tasks: istio.yaml
+#- import_tasks: istio.yaml

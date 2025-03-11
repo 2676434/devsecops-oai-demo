@@ -5,9 +5,12 @@ pipelines_expected_crds:
 
 stackrox_central_admin_password: stackrox
 ocp4_demo_pipeline_namespace: cicd
+oai_namespace: oai-basic
+
 acs_expected_crds:
 - centrals.platform.stackrox.io
 - securedclusters.platform.stackrox.io
+
 istio_expected_crds:
 - servicemeshcontrolplanes.maistra.io
 - servicemeshmembers.maistra.io

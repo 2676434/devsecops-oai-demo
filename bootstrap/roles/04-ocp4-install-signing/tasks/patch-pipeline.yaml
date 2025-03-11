@@ -1,11 +1,24 @@
-#- name: Link Quay Secret to Pipeline ServiceAccount for Pipeline Namespace
-#  shell: | 
-#    oc secrets link pipeline "{{ quay_secret_name }}" --for=pull,mount -n {{ pipeline_namespace }}
+- name: Generate pipeline sa token "oc -n {{ oai_namespace }} create token pipeline"
+  command: "oc -n {{ oai_namespace }} create token pipeline"
+  register: pipeline_token_output
 
-#- name: Link Quay Secret to default accounts for namespaces that should pull from quay
-#  shell: | 
-#    oc secrets link default "{{ quay_secret_name }}" --for=pull,mount -n {{ item }}
-#  loop: "{{ secret_required_namespaces }}"
+- name: Get pipeline token from output
+  set_fact:
+    pipeline_token: "{{ pipeline_token_output.stdout }}"
+
+
+- name: Create ACS API Token secret for using in the pipelines
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      stringData:
+        pipeline_token: "{{ pipeline_token }}"
+      kind: Secret
+      metadata:
+        name: oai-pipeline
+        namespace: "{{ pipeline_namespace }}"
+      type: Opaque
 
 - name: Create cosign Signing Task
   k8s:
@@ -19,28 +32,6 @@
     state: present
     definition: "{{ lookup('template', item ) | from_yaml }}"
   loop:
-  - ./templates/pipeline-build.yaml.j2
+  #- ./templates/pipeline-build.yaml.j2
   - ./templates/pipeline-build-pvc.yaml.j2
 
-#  - ./templates/pipeline-build-stage.yaml.j2
-#  - ./templates/pipeline-build-pvc.yaml.j2
-#
-#- name: Patch Openshift Image Config
-#  ansible.builtin.shell: |
-#    oc patch image.config.openshift.io cluster --type=merge -p '{"spec":{"registrySources":{"insecureRegistries":["{{ quay_route }}"]}}}'
-#  register: insecure_patch  
-#
-#- name: Pause for 4 minutes to wait for MCP to recieve changes
-#  ansible.builtin.pause:
-#    minutes: 4
-#  when: "'no change' not in insecure_patch.stdout"
-
-# - name: Waiting Until Openshift Cluster is Ready from Patch
-#   ansible.builtin.shell: |
-#     oc get mcp -o json | jq '.items[] | select (.status.machineCount==.status.updatedMachineCount)'
-#   register: mcp_result
-#   delay: 10
-#   retries: 15
-#   until:
-#     - mcp_result.stdout != ""
-#   when: "'no change' not in insecure_patch.stdout"
