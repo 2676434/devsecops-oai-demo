@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
   generateName: devsecops-oai
+  namespace: cicd
 spec:
   pipelineRef:
     name: devsecops-oai

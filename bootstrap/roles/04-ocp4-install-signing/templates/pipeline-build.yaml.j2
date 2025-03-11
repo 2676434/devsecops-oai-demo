@@ -15,6 +15,8 @@ spec:
   - name: harbor-images
     taskRef:
       name: get-harbor-images
+    runAfter:
+    - oai-clone
     params:
     - name: harbor-url
       value: https://harbor-registry.hub-cluster.example.com
@@ -30,25 +32,39 @@ spec:
   - name: oai-clone
     taskRef:
       name: git-clone
-    runAfter:
-    - harbor-images
     params:
     - name: GIT_REPOSITORY
       value: 'https://github.com/2676434/OAI-5G-DevSecops'
     workspaces:
     - name: workspace
       workspace: workspace
-  ##Update task to use deployment files from in git clone
+  - name: deployment-oai-pre
+    taskRef:
+      name: deploy-oai
+    runAfter:
+    - harbor-images
+    params:
+    - name: namespace
+      value: oai-basic
+    - name: pipeline_token
+      value: oai-pipeline
+    - name: file
+      value: deployment.yaml
+    workspaces:
+    - name: workspace
+      workspace: workspace
   - name: deployment-file
     taskRef:
       name: get-deployment-yaml
     runAfter:
-    - oai-clone
+    - deployment-oai-pre
     params:
     - name: namespace
-      value: dafault
+      value: oai-basic
     - name: manifest_file
       value: deployment.yaml
+    - name: pipeline_token
+      value: oai-pipeline
     workspaces:
     - name: workspace
       workspace: workspace
@@ -127,6 +143,8 @@ spec:
       value: oai-basic
     - name: pipeline_token
       value: oai-pipeline
+    - name: file
+      value: deployment.yaml
     workspaces:
     - name: workspace
       workspace: workspace

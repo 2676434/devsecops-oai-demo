@@ -14,15 +14,24 @@ spec:
     - name: namespace
       description: The application namespace
       type: string
-      default: "default"
+      default: "oai-basic"
+    - name: pipeline_token
+      description: The user token to deploy OAI
+      type: string
   steps:
-    - name: deploy-file
+    - name: get-deployment-yaml
       image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
       workingDir: /workspace/workspace
-      command: ["/bin/bash", "-c"]
-      args:
-        - |-
-          echo Saving manifests in $(inputs.params.manifest_file) file
-          oc login -u="kubeadmin" -p="kmYGV-DnGRo-wQywL-muSAF" "https://api.secondary-server.example.com:6443" --insecure-skip-tls-verify
-          oc get deployment -n $(inputs.params.namespace) -o yaml > $(inputs.params.manifest_file)
-          echo -----------------------------------
+      env:
+        - name: PIPELINE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(inputs.params.pipeline_token)
+              key: pipeline_token
+      script: |
+        #!/usr/bin/env bash
+        set +x
+        echo Get OAI deployments from $(inputs.params.namespace) namespace to $(inputs.params.manifest_file) file
+        echo TOKEN: $PIPELINE_TOKEN
+        oc get deployment -n $(inputs.params.namespace) -o yaml --token $PIPELINE_TOKEN > $(inputs.params.manifest_file)
+        echo -----------------------------------

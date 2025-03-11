@@ -3,8 +3,10 @@
     state: present
     definition: "{{ lookup('template', item ) | from_yaml }}"
   loop:
+  - ./templates/task-git-clone.yaml.j2
   - ./templates/task-image-scan-task.yaml.j2
   - ./templates/task-rox-deployment-check.yaml.j2
   - ./templates/task-rox-image-check.yaml.j2
   - ./templates/task-get-deployment.yaml.j2
   - ./templates/task-get-harbor-images.yaml.j2
+  - ./templates/task-install-oai.yaml.j2
