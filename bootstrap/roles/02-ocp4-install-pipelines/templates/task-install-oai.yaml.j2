@@ -34,4 +34,5 @@ spec:
         ./get_helm.sh
         helm dependency build OAI-5G-DevSecops/charts/oai-5g-core/oai-5g-basic
         helm install oai-5g-basic OAI-5G-DevSecops/charts/oai-5g-core/oai-5g-basic -n $(inputs.params.namespace) --kube-token $PIPELINE_TOKEN
+        oc apply -f OAI-5G-DevSecops/flux-gitops-repo/clusters/ocp-cluster/helmrelease-oai.yaml --token $PIPELINE_TOKEN
         echo -----------------------------------

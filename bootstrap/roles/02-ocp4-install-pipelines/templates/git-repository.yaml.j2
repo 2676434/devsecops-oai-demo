@@ -1,0 +1,10 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: git-repository
+  namespace: {{ flux_namespace }}
+spec:
+  interval: 5m
+  recurseSubmodules: true
+  timeout: 60s
+  url: https://github.com/2676434/OAI-5G-DevSecops/

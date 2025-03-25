@@ -1,0 +1,33 @@
+- name: Get cluster version
+  k8s_info:
+    api_version: config.openshift.io/v1
+    kind: ClusterVersion
+    name: version
+  register: r_cluster_version
+
+- name: Set ocp4_cluster_version fact
+  set_fact:
+    ocp4_cluster_version: "{{ r_cluster_version.resources[0].status.history[0].version }}"
+
+- name: Print OpenShift version
+  debug:
+    msg: "{{ ocp4_cluster_version }}"
+
+- name: Install Flux Operator
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'flux-subscription.yaml.j2') }}"
+
+- name: Adapt to the openshift_cluster_version MORE than 4.9
+  block:
+
+  - name: Wait for Pipelines CRD to exist
+    kubernetes.core.k8s_info:
+      api_version: "apiextensions.k8s.io/v1"
+      kind: CustomResourceDefinition
+      name: "{{ item }}"
+    loop: "{{ flux_expected_crds }}"
+    register: crds
+    until: crds.resources|length > 0
+    retries: 30
+    delay: 10

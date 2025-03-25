@@ -1,4 +1,4 @@
-- name: Create OpenShift Objects for Openshift Pipeline Tasks
+- name: Create OpenShift Objects for Openshift Pipeline Tasks and flux repo
   k8s:
     state: present
     definition: "{{ lookup('template', item ) | from_yaml }}"
@@ -10,3 +10,5 @@
   - ./templates/task-get-deployment.yaml.j2
   - ./templates/task-get-harbor-images.yaml.j2
   - ./templates/task-install-oai.yaml.j2
+  - ./templates/git-repository.yaml.j2
+  - ./templates/kustomization.yaml.j2

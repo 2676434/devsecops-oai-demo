@@ -6,6 +6,7 @@ pipelines_expected_crds:
 stackrox_central_admin_password: stackrox
 ocp4_demo_pipeline_namespace: cicd
 oai_namespace: oai-basic
+flux_namespace: flux-system
 
 acs_expected_crds:
 - centrals.platform.stackrox.io
@@ -16,3 +17,8 @@ istio_expected_crds:
 - servicemeshmembers.maistra.io
 - servicemeshmemberrolls.maistra.io
 - ossmconsoles.kiali.io
+
+flux_expected_crds:
+- gitrepositories.source.toolkit.fluxcd.io
+- helmcharts.source.toolkit.fluxcd.io
+- kustomizations.kustomize.toolkit.fluxcd.io
